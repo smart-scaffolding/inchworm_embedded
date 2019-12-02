@@ -25,8 +25,8 @@ bool triggerGrip = true;
 bool gripperFinished1 = true;
 bool gripperFinished2 = true;
 int gripperStatus = 0;
-int previousGripperState1;
-int previousGripperState2;
+int previousGripperState1 = -1;
+int previousGripperState2 = -1;
 int gripperStatusSerial1;
 int gripperStatusSerial2;
 
@@ -84,17 +84,17 @@ void loop() {
           }
           else{
               if (jointIndex > 2) { //Gripper
-              //  if((temp[1] - '0') != previousGripperState1){
+               if((temp[1] - '0') != previousGripperState1){
                   gripperStatusSerial1 = temp[1] - '0';
                   previousGripperState1 = gripperStatusSerial1;
                   gripperFinished1 = false;
-                //}
+                }
 
-                //if((temp[2] - '0') != previousGripperState2){
+                if((temp[2] - '0') != previousGripperState2){
                   gripperStatusSerial2 = temp[2] - '0';
                   previousGripperState2 = gripperStatusSerial2;
                   gripperFinished2 = false;
-                //}
+                }
 
                                   // Serial.print("Gripper 1 (Red): ");
                                   // Serial.println(gripperStatusSerial1);
