@@ -1,6 +1,6 @@
 //*****************************************************************************
 //
-// Gripper.h - Prototypes for the gripper driver. Using the Vex 29 motorcontrollers
+// Storage.h - Prototypes for the storage motor driver. Using the Vex 29 motorcontrollers
 //
 //*****************************************************************************
 

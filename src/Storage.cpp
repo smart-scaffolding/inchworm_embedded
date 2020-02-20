@@ -8,10 +8,9 @@
 #include "Storage.h"
 
 /*
-* Gripper Constructors
+* Storage Mechanism Constructors
 */
 
-//Empty contructor to build object
 Storage::Storage(){
 }
 
@@ -20,7 +19,6 @@ Storage::Storage(int pin){
     pin = pin;
     storageMotor.attach(pin);
 }
-
 
 void Storage::restPosition(){
     storageMotor.write(160);
