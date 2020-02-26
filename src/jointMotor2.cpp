@@ -104,20 +104,38 @@ void JointMotor2::debugPrint(char vName[3], double vInput)
 */
 void JointMotor2::setSpeed(double speed)
 {
-	double maxPercent = 0.9;
-	if (speed < -255 * maxPercent)
+	int maxSpeed = 255; //Maximum PWM output
+	double maxPercent = 0.9; //Max PWM output (percent of maxSpeed)
+	bool digWrite = false; //If true if abs(Speed) >= speed pin will be set HIGH
+	int deadMinPer = 5; //min deadband in percentage of max speed
+	int deadMaxPer = 10; //max deadband in percentage of max speed
+
+	int deadMin = int((maxSpeed/100)*deadMinPer); //min deadband in percentage of max speed
+	int deadMax = int((maxSpeed/100)*deadMaxPer); //max deadband in percentage of max speed
+
+
+	if (speed < -1* maxSpeed * maxPercent)
 	{
-		// speed = -255 * maxPercent;
-		digitalWrite(pinPWM, HIGH);
+		if (digWrite) {digitalWrite(pinPWM, HIGH);}
+		else {speed = -1 * maxSpeed * maxPercent;}
 	}
-	else if (speed > 255 * maxPercent)
+	else if (speed > maxSpeed * maxPercent)
 	{
-		// speed = 255 * maxPercent;
-		digitalWrite(pinPWM, HIGH);
+		if (digWrite) {digitalWrite(pinPWM, HIGH);}
+		else {speed = maxSpeed * maxPercent;}
 	}
 	else
 	{
-		analogWrite(pinPWM, abs(speed));
+		//Deadband
+		int absSpeed = abs(speed);
+		if (absSpeed < deadMin) {
+			absSpeed = 0;
+		}
+		else if (absSpeed >= absSpeed && absSpeed < deadMax) {
+			absSpeed = deadMax;
+		}
+
+		analogWrite(pinPWM, absSpeed);
 	}
 	changeDirection(speed);
 	return;
