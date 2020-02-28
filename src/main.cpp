@@ -446,15 +446,15 @@ int velocityCompensation(JointMotor2 motor, double th[], double d_th[]){
 	{ // A link gripper engaged (block on opposite link)
 		if (motor.id == 0)
 		{
-			return (LCoM3*m3*(2*d_th[0]^2*l2*sinLut(theta_1_2) + 2*d_th[0]^2*l3*sinLut(theta_2) + 2*d_th[1]^2*l3*sinLut(theta_2) + 4*d_th[0]*d_th[1]*l3*sinLut(theta_2)))/2;
+			return (LCoM3*m3*(2*d_th[0]^2*l2*sinLut[theta_1_2] + 2*d_th[0]^2*l3*sinLut[theta_2] + 2*d_th[1]^2*l3*sinLut[theta_2] + 4*d_th[0]*d_th[1]*l3*sinLut[theta_2]))/2;
 		}
 		else if (motor.id == 1)
 		{
-			return d_th[0]^2*l2*LCoM3*m3*sinLut(theta_1_2) + d_th[0]^2*l2*l3*m3*sinLut(theta_1) + d_th[0]^2*l2*LCoM2*m2*sinLut(theta_1) - d_th[2]^2*l3*LCoM3*m3*sinLut(theta_2) - 2*d_th[0]*d_th[2]*l3*LCoM3*m3*sinLut(theta_2) - 2*d_th[1]*d_th[2]*l3*LCoM3*m3*sinLut(theta_2);
+			return d_th[0]^2*l2*LCoM3*m3*sinLut[theta_1_2] + d_th[0]^2*l2*l3*m3*sinLut[theta_1] + d_th[0]^2*l2*LCoM2*m2*sinLut[theta_1] - d_th[2]^2*l3*LCoM3*m3*sinLut[theta_2] - 2*d_th[0]*d_th[2]*l3*LCoM3*m3*sinLut[theta_2] - 2*d_th[1]*d_th[2]*l3*LCoM3*m3*sinLut[theta_2];
 		}
 		else if (motor.id == 2)
 		{
-			return - d_th[1]^2*l2*LCoM3*m3*sinLut(theta_1_2) - d_th[2]^2*l2*LCoM3*m3*sinLut(theta_1_2) - d_th[1]^2*l2*l3*m3*sinLut(theta_1) - d_th[1]^2*l2*LCoM2*m2*sinLut(theta_1) - d_th[2]^2*l3*LCoM3*m3*sinLut(theta_2) - 2*d_th[0]*d_th[1]*l2*LCoM3*m3*sinLut(theta_1_2) - 2*d_th[0]*d_th[2]*l2*LCoM3*m3*sinLut(theta_1_2) - 2*d_th[1]*d_th[2]*l2*LCoM3*m3*sinLut(theta_1_2) - 2*d_th[0]*d_th[1]*l2*l3*m3*sinLut(theta_1) - 2*d_th[0]*d_th[1]*l2*LCoM2*m2*sinLut(theta_1) - 2*d_th[0]*d_th[2]*l3*LCoM3*m3*sinLut(theta_2) - 2*d_th[1]*d_th[2]*l3*LCoM3*m3*sinLut(theta_2);
+			return - d_th[1]^2*l2*LCoM3*m3*sinLut[theta_1_2] - d_th[2]^2*l2*LCoM3*m3*sinLut[theta_1_2] - d_th[1]^2*l2*l3*m3*sinLut[theta_1] - d_th[1]^2*l2*LCoM2*m2*sinLut[theta_1] - d_th[2]^2*l3*LCoM3*m3*sinLut[theta_2] - 2*d_th[0]*d_th[1]*l2*LCoM3*m3*sinLut[theta_1_2] - 2*d_th[0]*d_th[2]*l2*LCoM3*m3*sinLut[theta_1_2] - 2*d_th[1]*d_th[2]*l2*LCoM3*m3*sinLut[theta_1_2] - 2*d_th[0]*d_th[1]*l2*l3*m3*sinLut[theta_1] - 2*d_th[0]*d_th[1]*l2*LCoM2*m2*sinLut[theta_1] - 2*d_th[0]*d_th[2]*l3*LCoM3*m3*sinLut[theta_2] - 2*d_th[1]*d_th[2]*l3*LCoM3*m3*sinLut[theta_2];
 		}
 		else
 		{
