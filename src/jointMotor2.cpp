@@ -214,7 +214,7 @@ double JointMotor2::getAngleDegrees()
 		{
 			calibrated_angle = calibrated_angle - 360;
 		}
-		last_calibrated_angle = calibrated_angle;
+		
 		if (debug)
 		{
 			if (millis() - lastPubAng > 2000)
@@ -235,9 +235,10 @@ double JointMotor2::getAngleDegrees()
 		if(last_angle_update_time != 0)
 		{
 			current_velocity = (last_calibrated_angle - calibrated_angle) / int(millis() - last_angle_update_time);
-			last_calibrated_angle = millis();
 		}
+		last_angle_update_time = millis();
 
+		last_calibrated_angle = calibrated_angle;
 		return calibrated_angle;
 	}
 	else
