@@ -230,6 +230,14 @@ double JointMotor2::getAngleDegrees()
 				lastPubAng = millis();
 			}
 		}
+
+		// Udpate Current Joint Speed
+		if(last_angle_update_time != 0)
+		{
+			current_velocity = (last_calibrated_angle - calibrated_angle) / int(millis() - last_angle_update_time);
+			last_calibrated_angle = millis();
+		}
+
 		return calibrated_angle;
 	}
 	else
@@ -237,6 +245,11 @@ double JointMotor2::getAngleDegrees()
 		return last_calibrated_angle;
 	}
 }
+
+double getVelocity(){
+	return current_velocity;
+}
+
 /*
 * Set desired joint angle
 */
@@ -280,7 +293,7 @@ bool JointMotor2::switchPID(int gripperEngagedSelect)
 /*
 * calculate motor speed for PID
 */
-double JointMotor2::calcSpeed(double currentAngle, int gc, int useGravityComp, int velocity_term_scale)
+double JointMotor2::calcSpeed(double currentAngle, int gc, int useGravityComp, int vc)
 {
 
 	/**

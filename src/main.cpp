@@ -17,6 +17,7 @@ JointMotor2 jointMotor[NUM_MOTORS];
 // Storage storage;
 // int sMotor = 1;
 double theta[3];
+double d_theta[3];
 // double via_point_theta[3];
 float m1 = 0.281; // 0.09  CAD value: 0.183
 float m2 = 0.297; // with storing mechanism (with block 0.297 kg) Old: 0.357
@@ -43,7 +44,8 @@ float k2_d = -0.1325;
 float k3_d = -0.037;
 
 // TODO: reenable gravity compensation
-float gc_complimentary_filter = 0.;
+float gc_complimentary_filter = 0.0;
+float vc_complimentary_filter = 0.0;
 int useGravityComp = 0;
 
 //Serial Buffer
@@ -410,10 +412,62 @@ void debugPrint(char jName[3], char pName[3], char iName[3], char dName[3], doub
 	}
 }
 
+int velocityCompensation(JointMotor2 motor, double th[], double d_th[]){
+	int theta_1 = th[1];
+	int theta_2 = th[2];
+	int theta_1_2 = theta_1 + theta_2;
+
+	// Note for integrating velocity compensation
+	// 4 is for joint 2
+	// 3 is for joint 1
+	// 2 is for joint 0
+
+	if (gripperEngagedSelect == 2) // TODO change back to 2
+	{							   // D link gripper engaged (block on current link)
+		if (motor.id == 0)
+		{
+			return 0;
+		}
+		else if (motor.id == 1)
+		{
+			return 0;
+		}
+		else if (motor.id == 2)
+		{
+			return 0;
+		}
+		else
+		{
+			Serial.print("NO JOINT ID AVAILABLE FOR VELOCITY COMPENSATION");
+			return 0;
+		}
+	}
+	else
+	{ // A link gripper engaged (block on opposite link)
+		if (motor.id == 0)
+		{
+			return (LCoM3*m3*(2*d_th[0]^2*l2*sinLut(theta_1_2) + 2*d_th[0]^2*l3*sinLut(theta_2) + 2*d_th[1]^2*l3*sinLut(theta_2) + 4*d_th[0]*d_th[1]*l3*sinLut(theta_2)))/2;
+		}
+		else if (motor.id == 1)
+		{
+			return d_th[0]^2*l2*LCoM3*m3*sinLut(theta_1_2) + d_th[0]^2*l2*l3*m3*sinLut(theta_1) + d_th[0]^2*l2*LCoM2*m2*sinLut(theta_1) - d_th[2]^2*l3*LCoM3*m3*sinLut(theta_2) - 2*d_th[0]*d_th[2]*l3*LCoM3*m3*sinLut(theta_2) - 2*d_th[1]*d_th[2]*l3*LCoM3*m3*sinLut(theta_2);
+		}
+		else if (motor.id == 2)
+		{
+			return - d_th[1]^2*l2*LCoM3*m3*sinLut(theta_1_2) - d_th[2]^2*l2*LCoM3*m3*sinLut(theta_1_2) - d_th[1]^2*l2*l3*m3*sinLut(theta_1) - d_th[1]^2*l2*LCoM2*m2*sinLut(theta_1) - d_th[2]^2*l3*LCoM3*m3*sinLut(theta_2) - 2*d_th[0]*d_th[1]*l2*LCoM3*m3*sinLut(theta_1_2) - 2*d_th[0]*d_th[2]*l2*LCoM3*m3*sinLut(theta_1_2) - 2*d_th[1]*d_th[2]*l2*LCoM3*m3*sinLut(theta_1_2) - 2*d_th[0]*d_th[1]*l2*l3*m3*sinLut(theta_1) - 2*d_th[0]*d_th[1]*l2*LCoM2*m2*sinLut(theta_1) - 2*d_th[0]*d_th[2]*l3*LCoM3*m3*sinLut(theta_2) - 2*d_th[1]*d_th[2]*l3*LCoM3*m3*sinLut(theta_2);
+		}
+		else
+		{
+			Serial.print("NO JOINT ID AVAILABLE FOR VELOCITY COMPENSATION");
+			return 0;
+		}
+	}
+}
+
 /*
 *	Calculate Gravity Compensation
 */
-int gravityCompensation(JointMotor2 i, double th[], bool select)
+int gravityCompensation(JointMotor2 i, double th[])
 {
 	int theta0 = th[0];
 	int theta1 = th[1];
@@ -475,24 +529,27 @@ int gravityCompensation(JointMotor2 i, double th[], bool select)
 	}
 }
 
+
 /*
 * Update Speed of all joint motor for PWM
 */
 void updateSpeeds()
 {
 	int gc = 0;
+	int vc = 0;
 	double speeds[NUM_MOTORS] = {0, 0, 0};
 	for (int i = 0; i < NUM_MOTORS; i++)
 	{
 		theta[i] = jointMotor[i].getAngleDegrees();
+		d_theta[i] = jointMotor[i].getVelocity();
 		// via_point_theta[i] = jointMotor[i].desiredAngle;
 	}
 	for (int i = 0; i < NUM_MOTORS; i++)
 	{
-
-		gc = gravityCompensation(jointMotor[i], theta, true) * gc_complimentary_filter;
+		// vc = velocityCompensation(jointMotor[i], theta, d_theta) * vc_complimentary_filter;
+		gc = gravityCompensation(jointMotor[i], theta) * gc_complimentary_filter;
 		// gc = 0; //TODO: Uncomment line above to add gravity comp back in
-		speeds[i] = jointMotor[i].calcSpeed(theta[i], gc, useGravityComp, velocity_term_scale);
+		speeds[i] = jointMotor[i].calcSpeed(theta[i], gc, useGravityComp, vc);
 
 		// Serial.print("\nGravity Comp:");
 		// Serial.print(gc);
