@@ -1,0 +1,5 @@
+- dq3^2*l2*lCoM4*m4*sin(q3 + q4) - dq4^2*l2*lCoM4*m4*sin(q3 + q4) - dq3^2*l2*l3*m4*sin(q3) - dq3^2*l2*lCoM3*m3*sin(q3) - dq4^2*l3*lCoM4*m4*sin(q4) - 2*dq2*dq3*l2*lCoM4*m4*sin(q3 + q4) - 2*dq2*dq4*l2*lCoM4*m4*sin(q3 + q4) - 2*dq3*dq4*l2*lCoM4*m4*sin(q3 + q4) - 2*dq2*dq3*l2*l3*m4*sin(q3) - 2*dq2*dq3*l2*lCoM3*m3*sin(q3) - 2*dq2*dq4*l3*lCoM4*m4*sin(q4) - 2*dq3*dq4*l3*lCoM4*m4*sin(q4)
+
+dq2^2*l2*lCoM4*m4*sin(q3 + q4) + dq2^2*l2*l3*m4*sin(q3) + dq2^2*l2*lCoM3*m3*sin(q3) - dq4^2*l3*lCoM4*m4*sin(q4) - 2*dq2*dq4*l3*lCoM4*m4*sin(q4) - 2*dq3*dq4*l3*lCoM4*m4*sin(q4)
+
+(lCoM4*m4*(2*dq2^2*l2*sin(q3 + q4) + 2*dq2^2*l3*sin(q4) + 2*dq3^2*l3*sin(q4) + 4*dq2*dq3*l3*sin(q4)))/2
