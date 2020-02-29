@@ -247,7 +247,7 @@ double JointMotor2::getAngleDegrees()
 	}
 }
 
-double getVelocity(){
+double JointMotor2::getVelocity(){
 	return current_velocity;
 }
 
@@ -385,14 +385,14 @@ double JointMotor2::calcSpeed(double currentAngle, int gc, int useGravityComp, i
 			speed = pid_error + deadbandScale + (gc * useGravityComp);
 		}
 
-		if (speed < 0)
-		{
-			speed -= (velocity_term * velocity_term_scale);
-		}
-		else
-		{
-			speed += (velocity_term * velocity_term_scale);
-		}
+		// if (speed < 0)
+		// {
+		// 	speed -= (velocity_term * velocity_term_scale);
+		// }
+		// else
+		// {
+		// 	speed += (velocity_term * velocity_term_scale);
+		// }
 
 		// speed = pid_error + (gc * useGravityComp);
 		// if (id == 0)
