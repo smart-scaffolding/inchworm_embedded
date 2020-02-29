@@ -54,8 +54,9 @@ int useGravityComp = 0;
 
 //Serial Buffer
 const int MOTOR_PKT_LEN = 8;   // motor packet example: "-123.32_" (ending in space)
+const int MOTOR_PKT_VEL = 4;
 const int CONTROL_PKT_LEN = 4; // control packet example: "0131"
-const int len = MOTOR_PKT_LEN * 3 + CONTROL_PKT_LEN;
+const int len = (MOTOR_PKT_LEN + MOTOR_PKT_VEL) * 3 + CONTROL_PKT_LEN;
 char serialBuffer[len];
 const int PARSE_PKT_LEN = 4;
 char temp[PARSE_PKT_LEN];
@@ -283,7 +284,7 @@ void loop()
 						{	
 													  // receiving second half of an angle value
 							if (!parsing_joint_velocity){
-								ready_for_next_pkt = true; // flip the flag to true
+								ready_for_next_pkt = false; // flip the flag to true
 								parsing_joint_velocity = true; 
 								temp[0] = '0';
 								temp[PARSE_PKT_LEN - 1] = '0';
@@ -298,8 +299,10 @@ void loop()
 								Serial.print(tempAngle);
 							}
 							else{
+								ready_for_next_pkt = true; // flip the flag to true
+								parsing_joint_velocity = false; 
 								temp[PARSE_PKT_LEN - 1] = '0';
-								int temp_velocity = atoi(temp)/10
+								int temp_velocity = atoi(temp)/10;
 								jointMotor[jointIndex].setVelocity(temp_velocity); // divide by 1000 to compensate for the extra 0
 								Serial.print(" velocity[");
 								Serial.print(jointIndex + 1);

@@ -270,7 +270,7 @@ void JointMotor2::setAngle(double angle)
 /*
 * Set desired joint velocity
 */
-void JointMotor2::setVelocity(int velocity);
+void JointMotor2::setVelocity(int velocity)
 {
 	desired_velocity = velocity;
 }
