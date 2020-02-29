@@ -43,9 +43,13 @@ float k1_d = -0.089; //a link
 float k2_d = -0.1325;
 float k3_d = -0.037;
 
+float kv0_a = 0; // velocity
+float kv1_a = 0;
+float kv2_a = 0;
+
 // TODO: reenable gravity compensation
 float gc_complimentary_filter = 0.0;
-float vc_complimentary_filter = 0.0;
+float vc_complimentary_filter = 1.0;
 int useGravityComp = 0;
 
 //Serial Buffer
@@ -446,15 +450,15 @@ int velocityCompensation(JointMotor2 motor, double th[], double d_th[]){
 	{ // A link gripper engaged (block on opposite link)
 		if (motor.id == 0)
 		{
-			return -1*d_th[1]*d_th[1]*L2*LCoM3*m3*sinLut[theta_1_2] - d_th[2]*d_th[2]*L2*LCoM3*m3*sinLut[theta_1_2] - d_th[1]*d_th[1]*L2*L3*m3*sinLut[theta_1] - d_th[1]*d_th[1]*L2*LCoM2*m2*sinLut[theta_1] - d_th[2]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2] - 2*d_th[0]*d_th[1]*L2*LCoM3*m3*sinLut[theta_1_2] - 2*d_th[0]*d_th[2]*L2*LCoM3*m3*sinLut[theta_1_2] - 2*d_th[1]*d_th[2]*L2*LCoM3*m3*sinLut[theta_1_2] - 2*d_th[0]*d_th[1]*L2*L3*m3*sinLut[theta_1] - 2*d_th[0]*d_th[1]*L2*LCoM2*m2*sinLut[theta_1] - 2*d_th[0]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2] - 2*d_th[1]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2];
+			return kv0_a*(-1*d_th[1]*d_th[1]*L2*LCoM3*m3*sinLut[theta_1_2] - d_th[2]*d_th[2]*L2*LCoM3*m3*sinLut[theta_1_2] - d_th[1]*d_th[1]*L2*L3*m3*sinLut[theta_1] - d_th[1]*d_th[1]*L2*LCoM2*m2*sinLut[theta_1] - d_th[2]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2] - 2*d_th[0]*d_th[1]*L2*LCoM3*m3*sinLut[theta_1_2] - 2*d_th[0]*d_th[2]*L2*LCoM3*m3*sinLut[theta_1_2] - 2*d_th[1]*d_th[2]*L2*LCoM3*m3*sinLut[theta_1_2] - 2*d_th[0]*d_th[1]*L2*L3*m3*sinLut[theta_1] - 2*d_th[0]*d_th[1]*L2*LCoM2*m2*sinLut[theta_1] - 2*d_th[0]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2] - 2*d_th[1]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2]);
 		}
 		else if (motor.id == 1)
 		{
-			return d_th[0]*d_th[0]*L2*LCoM3*m3*sinLut[theta_1_2] + d_th[0]*d_th[0]*L2*L3*m3*sinLut[theta_1] + d_th[0]*d_th[0]*L2*LCoM2*m2*sinLut[theta_1] - d_th[2]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2] - 2*d_th[0]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2] - 2*d_th[1]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2];
+			return kv1_a*(d_th[0]*d_th[0]*L2*LCoM3*m3*sinLut[theta_1_2] + d_th[0]*d_th[0]*L2*L3*m3*sinLut[theta_1] + d_th[0]*d_th[0]*L2*LCoM2*m2*sinLut[theta_1] - d_th[2]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2] - 2*d_th[0]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2] - 2*d_th[1]*d_th[2]*L3*LCoM3*m3*sinLut[theta_2]);
 		}
 		else if (motor.id == 2)
 		{
-			return (LCoM3*m3*(2*d_th[0]*d_th[0]*L2*sinLut[theta_1_2] + 2*d_th[0]*d_th[0]*L3*sinLut[theta_2] + 2*d_th[1]*d_th[1]*L3*sinLut[theta_2] + 4*d_th[0]*d_th[1]*L3*sinLut[theta_2]))/2;
+			return kv2_a*((LCoM3*m3*(2*d_th[0]*d_th[0]*L2*sinLut[theta_1_2] + 2*d_th[0]*d_th[0]*L3*sinLut[theta_2] + 2*d_th[1]*d_th[1]*L3*sinLut[theta_2] + 4*d_th[0]*d_th[1]*L3*sinLut[theta_2]))/2);
 		}
 		else
 		{
@@ -498,7 +502,7 @@ int gravityCompensation(JointMotor2 i, double th[])
 			return k2_d * (g * m3 * (L2 * sinLut[theta0 + theta1] + (L3 - LCoM3) * sinLut[theta0 + theta1 + theta2]) + g * (L2 - LCoM2) * m2 * sinLut[theta1 + theta0] + g * mblock * Lblock * sinLut[theta1 + theta0]);
 		}
 		else if (i.id == 2)
-		{f
+		{
 			return k3_d * (g * m3 * (L1 * sinLut[theta0] + L2 * sinLut[theta0 + theta1] + (L3 - LCoM3) * sinLut[theta0 + theta1 + theta2]) + g * m2 * (L1 * sinLut[theta0] + (L2 - (L2 - LCoM2)) * sinLut[theta0 + theta1]) + g * (L1 - LCoM1) * m1 * sinLut[theta0] + g * mblock * (L1 * sinLut[theta0] + Lblock * sinLut[theta0 + theta1]));
 		}
 		else
@@ -546,7 +550,7 @@ void updateSpeeds()
 	}
 	for (int i = 0; i < NUM_MOTORS; i++)
 	{
-		// vc = velocityCompensation(jointMotor[i], theta, d_theta) * vc_complimentary_filter;
+		vc = velocityCompensation(jointMotor[i], theta, d_theta) * vc_complimentary_filter;
 		gc = gravityCompensation(jointMotor[i], theta) * gc_complimentary_filter;
 		// gc = 0; //TODO: Uncomment line above to add gravity comp back in
 		speeds[i] = jointMotor[i].calcSpeed(theta[i], gc, useGravityComp, vc);

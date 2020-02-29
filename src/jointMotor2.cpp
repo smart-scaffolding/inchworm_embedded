@@ -378,11 +378,11 @@ double JointMotor2::calcSpeed(double currentAngle, int gc, int useGravityComp, i
 
 		if (pid_error < 0)
 		{
-			speed = pid_error - deadbandScale + (gc * useGravityComp);
+			speed = pid_error - deadbandScale + (gc * useGravityComp) + vc;
 		}
 		else
 		{
-			speed = pid_error + deadbandScale + (gc * useGravityComp);
+			speed = pid_error + deadbandScale + (gc * useGravityComp) + vc;
 		}
 
 		// if (speed < 0)
