@@ -151,6 +151,7 @@ void setup()
 	// 0005.21 0116.44 0058.30 0100 Trevor use this one [FIRST WAYPOINT]
 	// 0030.00 0084.00 0067.00 0100 //Try this after [SECOND WAYPOINT]
 	// 0045.00 0090.00 0045.00 0100 [THIRD WAYPOINT]
+	// 0005.21 010 0116.44 010 0058.30 010 0100
 
 	//D link fixed
 	// 0067.00 0084.00 0030.00 0100
@@ -203,7 +204,8 @@ void loop()
 		int tempIndex = 0;
 		int jointIndex = 0;
 		float tempAngle = 0;
-		boolean motorPktCompleted = true;
+		bool ready_for_next_pkt = true;
+		bool parsing_joint_velocity = false;
 
 		if (serialBuffer[0] == '-' || serialBuffer[0] == '0')
 		{
@@ -263,9 +265,10 @@ void loop()
 					}
 					else
 					{ //Joint angles
-						if (motorPktCompleted)
+						if (ready_for_next_pkt)
 						{							   // receiving first half of an angle value
-							motorPktCompleted = false; // flip the flag to false
+							ready_for_next_pkt = false; // flip the flag to false
+							parsing_joint_velocity = false;
 							if (temp[0] == '-')
 							{
 								temp[0] = '0';
@@ -277,19 +280,34 @@ void loop()
 							}
 						}
 						else
-						{							  // receiving second half of an angle value
-							motorPktCompleted = true; // flip the flag to true
-							temp[0] = '0';
-							temp[PARSE_PKT_LEN - 1] = '0';
-							tempAngle += (atof(temp) / 1000.0); // divide by 1000 to compensate for the extra 0
-							useGravityComp = 1;
-							jointMotor[jointIndex].setAngle(tempAngle);
-							// jointMotor[jointIndex].sumError = 0.0;
-							Serial.print("Set angle[");
-							Serial.print(jointIndex + 1);
-							Serial.print("]: ");
-							Serial.println(tempAngle);
-							jointIndex++;
+						{	
+													  // receiving second half of an angle value
+							if (!parsing_joint_velocity){
+								ready_for_next_pkt = true; // flip the flag to true
+								parsing_joint_velocity = true; 
+								temp[0] = '0';
+								temp[PARSE_PKT_LEN - 1] = '0';
+								tempAngle += (atof(temp) / 1000.0); // divide by 1000 to compensate for the extra 0
+								useGravityComp = 1;
+								jointMotor[jointIndex].setAngle(tempAngle);
+								// jointMotor[jointIndex].sumError = 0.0;
+
+								Serial.print("Set angle[");
+								Serial.print(jointIndex + 1);
+								Serial.print("]: ");
+								Serial.print(tempAngle);
+							}
+							else{
+								temp[PARSE_PKT_LEN - 1] = '0';
+								int temp_velocity = atoi(temp)/10
+								jointMotor[jointIndex].setVelocity(temp_velocity); // divide by 1000 to compensate for the extra 0
+								Serial.print(" velocity[");
+								Serial.print(jointIndex + 1);
+								Serial.print("]: ");
+								Serial.println(temp_velocity);
+								jointIndex++;
+							}
+							
 						}
 					}
 				}
@@ -545,7 +563,7 @@ void updateSpeeds()
 	for (int i = 0; i < NUM_MOTORS; i++)
 	{
 		theta[i] = jointMotor[i].getAngleDegrees();
-		d_theta[i] = jointMotor[i].getVelocity();
+		d_theta[i] = jointMotor[i].getDesiredVelocity();
 		// via_point_theta[i] = jointMotor[i].desiredAngle;
 	}
 	for (int i = 0; i < NUM_MOTORS; i++)

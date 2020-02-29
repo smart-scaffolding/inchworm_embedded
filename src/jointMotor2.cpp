@@ -251,6 +251,10 @@ double JointMotor2::getVelocity(){
 	return current_velocity;
 }
 
+int JointMotor2::getDesiredVelocity(){
+	return desired_velocity;
+}
+
 /*
 * Set desired joint angle
 */
@@ -261,6 +265,16 @@ void JointMotor2::setAngle(double angle)
 	// sumError = 0;
 	return;
 }
+
+
+/*
+* Set desired joint velocity
+*/
+void JointMotor2::setVelocity(int velocity);
+{
+	desired_velocity = velocity;
+}
+
 /*
 * Switch PID values for which joint is fixed
 * Returns false if gripper 1 is engaged and true if gripper 2

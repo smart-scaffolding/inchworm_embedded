@@ -43,7 +43,7 @@ private:
 	// Joint Velocity Calculation
 	unsigned long last_angle_update_time = 0;
 	double current_velocity = 0;
-
+	int desired_velocity = 0;
 public:
 	double sumError, lastError;
 	double desiredAngle;
@@ -59,10 +59,12 @@ public:
 	void setSpeed(double speed);
 	void changeDirection(double speed);
 	void setAngle(double angle);
+	void setVelocity(int velocity);
 	bool switchPID(int gripperEngagedSelect);
 	double calcSpeed(double currentAngle, int gc, int useGravityComp, int velocity_term_scale);
 	double getAngleDegrees();
 	double getVelocity();
+	int getDesiredVelocity();
 	void debugPrint(char vName[3], double vInput);
 	void debugPrint2(char vName[3], double vInput);
 	// float gravityCompensation(int th);
