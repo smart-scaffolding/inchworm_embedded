@@ -4,7 +4,7 @@
 #include "config.h"
 #include "pins.h"
 #include "JointMotor2.h"
-// #include "Gripper.h"
+#include "Gripper.h"
 
 ////////////////////////////////////////////////////////////////
 // TUNABLE PARAMETERS
@@ -37,7 +37,7 @@ String inputBuffer; //String isn't the most efficient, but easier for I/O
 ////////////////////////////////////////////////////////////////
 // GRIPPER CONTROL
 ////////////////////////////////////////////////////////////////
-// Gripper gripper[4];
+Gripper gripper[4];
 bool gripperFinished1 = true;
 bool gripperFinished2 = true;
 bool allenKeyFinished = true;
@@ -66,8 +66,6 @@ bool switchedPid_2 = false;
 
 // 0030.00 0130.00 0030.00 0100
 // 0028.00 0124.00 0028.00 0100
-// 0028.00 000 0124.00 000 0028.00 000 0100
-
 ////////////////////////////////////////////////////////////////
 // FUNCTION PROTOTYPES
 ////////////////////////////////////////////////////////////////
@@ -132,12 +130,12 @@ void setup()
 
 	if (USE_GRIPPERS)
 	{
-		// gripper[0] = Gripper(GRIPPER_MOTOR_1, false, false); //yellow gripper
-		// gripper[1] = Gripper(GRIPPER_MOTOR_2, true, false);  //red gripper
-		// gripper[2] = Gripper(GRIPPER_MOTOR_3, false, false); //yellow gripper
-		// gripper[3] = Gripper(GRIPPER_MOTOR_4, true, false);  //red gripper
-		// gripperSelect = jointMotor[0].fixed_link == jointMotor[0].a_link_engaged ? 1 : 2;
-		// gripperState = gripper[0].engage;
+		gripper[0] = Gripper(GRIPPER_MOTOR_1, false, false); //yellow gripper
+		gripper[1] = Gripper(GRIPPER_MOTOR_2, true, false);  //red gripper
+		gripper[2] = Gripper(GRIPPER_MOTOR_3, true, false); //yellow gripper
+		gripper[3] = Gripper(GRIPPER_MOTOR_4, false, false);  //red gripper
+		gripperSelect = jointMotor[0].fixed_link == jointMotor[0].a_link_engaged ? 1 : 2;
+		gripperState = gripper[0].engage;
 	}
 
 	Serial.println("Done");
@@ -349,10 +347,13 @@ void ReadAngleInputs()
 				{
 					temp[PARSE_PKT_LEN - 1] = '\n'; //you need this
 					tempIndex = 0;
+					
 					if (jointIndex > 2)
 					{ //Gripper
 						if (USE_GRIPPERS)
 						{
+							// Serial.print("temp");
+							// Serial.println(temp);	
 							// Allen Key Control
 							if ((temp[0] - '0' == 1) || (temp[0] - '0' == 2) || (temp[0] - '0' == 3))
 							{
@@ -365,9 +366,13 @@ void ReadAngleInputs()
 							// Gripper Control
 							if ((temp[2] - '0' == 1) || (temp[2] - '0' == 2) || (temp[2] - '0' == 3))
 							{
+								// Serial.println("In gripper control in serial read");
 								gripperSelect = (temp[2] - '0');
 								gripperState = (temp[3] - '0');
-
+								// Serial.print("Gripper Select: ");
+								// Serial.print(gripperSelect);
+								// Serial.print("\tGripper State: ");
+								// Serial.println(gripperState);
 								if (gripperSelect == 1)
 								{
 									// Serial.println("Gripper select set to 1");
@@ -435,21 +440,25 @@ void ActuateGrippers()
 {
 
 	// Allen Key Control Code
-	// if (!allenKeyFinished && (allenKeySelect == 1 || allenKeySelect == 2)
-	// {
-	// 	allenKeyFinished = gripper[allenKeySelect - 1 + 2].setGripper(allenKeyState);
-	// }
+	if (!allenKeyFinished && (allenKeySelect == 1 || allenKeySelect == 2))
+	{
+		allenKeyFinished = gripper[allenKeySelect - 1 + 2].setGripper(allenKeyState);
+		allenKeyFinished = true;
+	}
 
 	// Gripper Control Code
 	if (!gripperFinished1 && gripperSelect == 1)
 	{
-		// gripperFinished1 = gripper[gripperSelect - 1].setGripper(gripperState);
+				// Serial.println("Set gripper 1");
+
+		gripperFinished1 = gripper[gripperSelect - 1].setGripper(gripperState);
 		gripperFinished1 = true;
 	}
 
 	if (!gripperFinished2 && gripperSelect == 2)
 	{
-		// gripperFinished2 = gripper[gripperSelect - 1].setGripper(gripperState);
+		// Serial.println("Set gripper 2");
+		gripperFinished2 = gripper[gripperSelect - 1].setGripper(gripperState);
 		gripperFinished2 = true;
 	}
 
@@ -460,6 +469,9 @@ void ActuateGrippers()
 	// Serial.print("\tGripper Finished 2: ");
 	// Serial.print(gripperFinished1);
 
+	if(allenKeyFinished  && (allenKeySelect == 1 || allenKeySelect == 2)){
+		allenKeySelect = 0;
+	}
 	// Serial.print("\nGripper Select ");
 	if (gripperFinished1 && gripperSelect == 1 && gripperState == 1) // A link gripper just engaged
 	{

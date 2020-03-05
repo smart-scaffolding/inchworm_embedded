@@ -15,9 +15,9 @@ JointMotor2::JointMotor2(int pwmF, int pwmR, int pinE,
 	pinMode(pinEnable, OUTPUT);
 	digitalWrite(pinEnable, HIGH);
 	//Encoder Setup
-	encoder = AMS_AS5048B(encoderAddress);
-	encoder.begin();	  //Encoder Constructor
-	encoder.setZeroReg(); //Zero Encoders
+	// encoder = AMS_AS5048B(encoderAddress);
+	// encoder.begin();	  //Encoder Constructor
+	// encoder.setZeroReg(); //Zero Encoders
 
 	//PID
 	kP = kP1 = kp_a_link_fixed;
@@ -29,8 +29,8 @@ JointMotor2::JointMotor2(int pwmF, int pwmR, int pinE,
 	kD2 = kd_d_link_fixed;
 
 	angle_offset = ang_offset;
-	enc_clockwise = encoder_clockwise;
-	encoder.setClockWise(enc_clockwise);
+	// enc_clockwise = encoder_clockwise;
+	// encoder.setClockWise(enc_clockwise);
 
 	id = id_input;
 }
@@ -65,7 +65,7 @@ void JointMotor2::SendPWM(int speed)
 */
 double JointMotor2::getAngleDegrees()
 {
-	double angle = encoder.angleR(U_DEG, true);
+	double angle = 0;
 	double calibrated_angle = angle + angle_offset;
 
 	// if (calibrated_angle > 360)
