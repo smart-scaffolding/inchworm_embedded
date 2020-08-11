@@ -139,6 +139,8 @@ class AMS_AS5048B {
 	double		_movingAvgExpCos;
 	double		_movingAvgExpAlpha;
 	int		_movingAvgCountLoop;
+	int 	_errorCount;
+	uint16_t previousReadValue;
 
 	//methods
 	uint8_t		readReg8(uint8_t address);

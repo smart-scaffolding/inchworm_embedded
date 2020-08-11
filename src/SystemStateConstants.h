@@ -8,3 +8,7 @@
 #define TEST_ALL 3
 #define TEST_ENCODERS 4
 #define TEST_MOTORS 5 
+
+#define SMA 6 
+#define EMA 7
+#define RAWR 8

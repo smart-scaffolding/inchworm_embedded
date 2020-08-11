@@ -4,11 +4,13 @@
 #define _JOINTMOTOR2_h
 
 #include "ams_as5048b.h"
+#include "..\..\src\SystemStateConstants.h"
 
 class JointMotor2
 {
 private:
 	uint8_t id;
+	int encoderMeasurmentT;
 
 	uint8_t pwmForward, pwmReverse, pinEnable;
 	AMS_AS5048B encoder;
@@ -28,6 +30,8 @@ private:
 	double lastError = 0;
 
 	double lastDebugUpdate = 0;
+	int errorJointFlag = 0;
+	bool activeJoint = true;
 
 public:
 	JointMotor2() {}
@@ -35,7 +39,7 @@ public:
 	JointMotor2(int pinDirectionA1, int pinDirectionB1, int pinPWM1,
 				uint8_t encoderAddress, double kp_a_link_fixed, double ki_a_link_fixed, double kd_a_link_fixed,
 				double kp_d_link_fixed, double ki_d_link_fixed, double kd_d_link_fixed,
-				double ang_offset, bool encoder_clockwise, uint8_t id_input);
+				double ang_offset, bool encoder_clockwise, int encoderMeasurmentType, uint8_t id_input);
 
 	void SendPWM(int speed);
 	void SetTarget(double angle);

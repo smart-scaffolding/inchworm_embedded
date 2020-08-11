@@ -14,7 +14,7 @@ JointMotor2::JointMotor2(int pwmF, int pwmR)
 JointMotor2::JointMotor2(int pwmF, int pwmR, int pinE,
 						 uint8_t encoderAddress, double kp_a_link_fixed, double ki_a_link_fixed, double kd_a_link_fixed,
 						 double kp_d_link_fixed, double ki_d_link_fixed, double kd_d_link_fixed,
-						 double ang_offset, bool encoder_clockwise, uint8_t id_input)
+						 double ang_offset, bool encoder_clockwise, int encoderMeasurmentType, uint8_t id_input)
 {
 	//Pin Configuration
 	pwmForward = pwmF;
@@ -42,6 +42,8 @@ JointMotor2::JointMotor2(int pwmF, int pwmR, int pinE,
 	enc_clockwise = encoder_clockwise;
 	encoder.setClockWise(enc_clockwise);
 
+	encoderMeasurmentT = encoderMeasurmentType;
+	encoder.resetMovingAvgExp();
 	id = id_input;
 }
 
@@ -75,7 +77,14 @@ void JointMotor2::SendPWM(int speed)
 */
 double JointMotor2::getAngleDegrees()
 {
-	double angle = encoder.angleR(U_DEG, true);
+	double angle = 0.0;
+	if (encoderMeasurmentT == EMA){ // Calulate Exponential Moving Average
+		encoder.updateMovingAvgExp();
+		angle = encoder.getMovingAvgExp();
+	}else{ 								  // Read Raw Angle 
+		angle = encoder.angleR(U_DEG, true);
+	}
+	
 	// Serial.println("Ang:");
 	// Serial.print(angle);
 	double calibrated_angle = angle + angle_offset;
@@ -104,11 +113,18 @@ double JointMotor2::getAngleDegrees()
 	if (delta < -180)
 		delta += 360;
 
-	if (fabs(delta) > ANGLE_ERROR_THRESHOLD)
+	if (fabs(delta) > ANGLE_ERROR_THRESHOLD || !activeJoint)
 	{
-		Serial.println("Angle error!");
+		Serial.printf("Angle error on joint %d, sending previous angle!\n", id);
+		errorJointFlag++;
+		if(errorJointFlag > 10){
+			activeJoint = false;
+			Serial.printf("DEACTIVATING Joint %d check encoder angles.\n", id);
+		}
+		return last_calibrated_angle;
 	}
 
+	errorJointFlag = 0;
 	last_calibrated_angle = calibrated_angle;
 	// double currentTime = millis();
 	// if (currentTime - lastDebugUpdate >= 3000)

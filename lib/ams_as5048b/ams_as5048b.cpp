@@ -19,7 +19,6 @@
 #include <math.h>
 #include <Wire.h>
 #include "ams_as5048b.h"
-#include "ErrorConstants.h"
 
 /*========================================================================*/
 /*                            CONSTRUCTORS                                */
@@ -33,11 +32,13 @@
 AMS_AS5048B::AMS_AS5048B(void) {
 	_chipAddress = AS5048_ADDRESS;
 	_debugFlag = false;
+	_errorCount = 0;
 }
 
 AMS_AS5048B::AMS_AS5048B(uint8_t chipAddress) {
 	_chipAddress = chipAddress;
 	_debugFlag = false;
+	_errorCount = 0;
 }
 
 /*========================================================================*/
@@ -237,9 +238,10 @@ uint8_t AMS_AS5048B::addressRegR(void) {
 /**************************************************************************/
 void AMS_AS5048B::setZeroReg(void) {
 
-        AMS_AS5048B::zeroRegW((uint16_t) 0x00); //Issue closed by @MechatronicsWorkman and @oilXander. The last sequence avoids any offset for the new Zero position
+    AMS_AS5048B::zeroRegW((uint16_t) 0x00); //Issue closed by @MechatronicsWorkman and @oilXander. The last sequence avoids any offset for the new Zero position
 	uint16_t newZero = AMS_AS5048B::readReg16(AS5048B_ANGLMSB_REG);
-        AMS_AS5048B::zeroRegW(newZero);
+    AMS_AS5048B::zeroRegW(newZero);
+	previousReadValue = angleR(U_DEG, true);
 	return;
 }
 
@@ -342,7 +344,7 @@ double AMS_AS5048B::angleR(int unit, boolean newVal) {
 	double angleRaw;
 	uint16_t angleReadRegister = AMS_AS5048B::readReg16(AS5048B_ANGLMSB_REG);
 
-	if (newVal && angleReadRegister != I2C_ERROR) {
+	if (newVal){ // && angleReadRegister != I2C_ERROR) {
 		if(_clockWise) {
 			angleRaw = (double) (0b11111111111111 - angleReadRegister);
 		}
@@ -460,9 +462,11 @@ uint16_t AMS_AS5048B::readReg16(uint8_t address) {
 	if (requestResult){
 		Serial.print("I2C error: ");
 		Serial.println(requestResult);
-		// return I2C_ERROR;
+		if(_errorCount > 20){
+			Serial.printf("FLAG Check encoder with address %02x", _chipAddress);
+		}
+		return previousReadValue;
 	}
-
 
 	Wire.requestFrom(_chipAddress, nbByte2Read);
 	for (byte i=0; i < nbByte2Read; i++) {
@@ -471,6 +475,7 @@ uint16_t AMS_AS5048B::readReg16(uint8_t address) {
 
 	readValue = (((uint16_t) readArray[0]) << 6);
 	readValue += (readArray[1] & 0x3F);
+	previousReadValue = readValue;
 	/*
 	Serial.println(readArray[0], BIN);
 	Serial.println(readArray[1], BIN);
