@@ -2,13 +2,15 @@
 #include "config.h"
 
 
-JointMotor2::JointMotor2(int pwmF, int pwmR)
+JointMotor2::JointMotor2(int pwmF, int pwmR, uint8_t id_input)
 {
 	//Pin Configuration
 	pwmForward = pwmF;
 	pwmReverse = pwmR;
 	pinMode(pwmForward, OUTPUT);
 	pinMode(pwmReverse, OUTPUT);
+
+	id = id_input;
 }
 
 JointMotor2::JointMotor2(int pwmF, int pwmR, int pinE,
@@ -45,28 +47,33 @@ JointMotor2::JointMotor2(int pwmF, int pwmR, int pinE,
 	encoderMeasurmentT = encoderMeasurmentType;
 	encoder.resetMovingAvgExp();
 	id = id_input;
+
+	errorJointFlag = true;
+	activeJoint = true;
 }
 
 const int maxDutyCycle = 230;
 void JointMotor2::SendPWM(int speed)
 {
-	if (speed < 0)
-	{
-		if (speed < -maxDutyCycle)
+	if(errorJointFlag){
+		if (speed < 0)
 		{
-			speed = -maxDutyCycle;
+			if (speed < -maxDutyCycle)
+			{
+				speed = -maxDutyCycle;
+			}
+			analogWrite(pwmReverse, 0);
+			analogWrite(pwmForward, -speed);
 		}
-		analogWrite(pwmReverse, 0);
-		analogWrite(pwmForward, -speed);
-	}
-	else
-	{
-		if (speed > maxDutyCycle)
+		else
 		{
-			speed = maxDutyCycle;
+			if (speed > maxDutyCycle)
+			{
+				speed = maxDutyCycle;
+			}
+			analogWrite(pwmForward, 0);
+			analogWrite(pwmReverse, speed);
 		}
-		analogWrite(pwmForward, 0);
-		analogWrite(pwmReverse, speed);
 	}
 
 	return;
@@ -77,13 +84,14 @@ void JointMotor2::SendPWM(int speed)
 */
 double JointMotor2::getAngleDegrees()
 {
-	double angle = 0.0;
-	if (encoderMeasurmentT == EMA){ // Calulate Exponential Moving Average
-		encoder.updateMovingAvgExp();
-		angle = encoder.getMovingAvgExp();
-	}else{ 								  // Read Raw Angle 
-		angle = encoder.angleR(U_DEG, true);
-	}
+	double angle = encoder.angleR(U_DEG, true);
+	// double angle = 0.0;
+	// if (encoderMeasurmentT == EMA){ // Calulate Exponential Moving Average
+	// 	encoder.updateMovingAvgExp();
+	// 	angle = encoder.getMovingAvgExp();
+	// }else{ 								  // Read Raw Angle 
+	// 	angle = encoder.angleR(U_DEG, true);
+	// }
 	
 	// Serial.println("Ang:");
 	// Serial.print(angle);
@@ -115,9 +123,9 @@ double JointMotor2::getAngleDegrees()
 
 	if (fabs(delta) > ANGLE_ERROR_THRESHOLD || !activeJoint)
 	{
-		Serial.printf("Angle error on joint %d, sending previous angle!\n", id);
+		Serial.printf("ANGLE ERROR on joint %d because of delta %f, sending previous angle!\n", id, fabs(delta));
 		errorJointFlag++;
-		if(errorJointFlag > 10){
+		if(errorJointFlag > 5){
 			activeJoint = false;
 			Serial.printf("DEACTIVATING Joint %d check encoder angles.\n", id);
 		}
@@ -194,7 +202,6 @@ int JointMotor2::CalcEffort(void)
 
 	lastError = error;
 
-	// //TODO:
 	double currentTime = millis();
 	if (currentTime - lastDebugUpdate >= 1000)
 	{

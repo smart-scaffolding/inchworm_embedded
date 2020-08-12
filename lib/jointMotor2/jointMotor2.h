@@ -22,7 +22,7 @@ private:
 
 	double targetAngle;
 
-	double last_calibrated_angle; //angle of joint
+	double last_calibrated_angle = 0.0; //angle of joint
 	double angle_offset;		  // offset of angle in calibration position
 	bool enc_clockwise;			  //1 if switch direction
 
@@ -35,7 +35,7 @@ private:
 
 public:
 	JointMotor2() {}
-	JointMotor2(int pwmF, int pwmR);
+	JointMotor2(int pwmF, int pwmR, uint8_t id_input);
 	JointMotor2(int pinDirectionA1, int pinDirectionB1, int pinPWM1,
 				uint8_t encoderAddress, double kp_a_link_fixed, double ki_a_link_fixed, double kd_a_link_fixed,
 				double kp_d_link_fixed, double ki_d_link_fixed, double kd_d_link_fixed,

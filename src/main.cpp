@@ -66,7 +66,7 @@ bool switchedPid_2 = false;
 ////////////////////////////////////////////////////////////////
 // SYTEM CONSTANTS
 ////////////////////////////////////////////////////////////////
-int testState = TEST_ENCODERS;
+int testState = TEST_MOTORMENCODERR;
 
 ////////////////////////////////////////////////////////////////
 // FUNCTION PROTOTYPES
@@ -81,6 +81,7 @@ bool buttonPressed(void);
 void testJointMotor(void);
 void testEncoders(void);
 void testMotors(void);
+void testMotorMoveAngleRead(void);
 
 ////////////////////////////////////////////////////////////////
 // SETUP METHOD
@@ -119,13 +120,13 @@ void setup()
 			jointMotor[0] = JointMotor2(JOINT_MOTOR1_FWD, JOINT_MOTOR1_REV, JOINT_MOTOR1_EN, // A-LINK WRIST
 										JOINT_MOTOR1_ADR, 8, 0, 0, 0, 0, 0, 0.0, false, measType, 1);
 			jointMotor[1] = JointMotor2(JOINT_MOTOR2_FWD, JOINT_MOTOR2_REV, JOINT_MOTOR2_EN, // AB-LINK JOINT
-										JOINT_MOTOR2_ADR, 12, 1, 0, 0, 0, 0, 27.81, false, measType, 2);
+										JOINT_MOTOR2_ADR, 22, .3, 0, 0, 0, 0, 27.81, false, measType, 2);
 			jointMotor[2] = JointMotor2(JOINT_MOTOR3_FWD, JOINT_MOTOR3_REV, JOINT_MOTOR3_EN, // BC-LINK JOINT
-										JOINT_MOTOR3_ADR, 12, 1, 0, 0, 0, 0, 124.38, true, measType, 3);
+										JOINT_MOTOR3_ADR, 25, .35, 0, 0, 0, 0, 124.38, true, measType, 3);
 			jointMotor[3] = JointMotor2(JOINT_MOTOR4_FWD, JOINT_MOTOR4_REV, JOINT_MOTOR4_EN, // CD-LINK JOINT
-										JOINT_MOTOR4_ADR, 12, 1, 0, 0, 0, 0, 27.8, true, measType, 4);
+										JOINT_MOTOR4_ADR, 8, .3, 0, 0, 0, 0, 27.8, true, measType, 4);
 			jointMotor[4] = JointMotor2(JOINT_MOTOR5_FWD, JOINT_MOTOR5_REV, JOINT_MOTOR5_EN, // D-LINK WRIST
-										JOINT_MOTOR5_ADR, 8, 0, 0, 0, 0, 0, 0.0, false, measType, 5);
+										JOINT_MOTOR5_ADR, 8, 0.3, 0, 0, 0, 0, 0.0, false, measType, 5);
 
 			jointMotor[0].SetTarget(0.0);
 			jointMotor[1].SetTarget(27.81);
@@ -167,6 +168,8 @@ void loop()
 	if(testState == TEST_ALL){
 		testEncoders();
 		testMotors();
+	}else if(testState == TEST_MOTORMENCODERR){
+		testMotorMoveAngleRead();
 	}else if(testState == TEST_ENCODERS){
 		testEncoders();
 	}else if(testState == TEST_MOTORS){
@@ -713,7 +716,7 @@ void testEncoders(void){
 }
 
 void testMotors(void){
-		Serial.print("------ MOTOR TEST -----\n");
+	Serial.print("------ MOTOR TEST -----\n");
 	Serial.print("  The following pins are set for each motor (forward, reverse): \n");
 
 	JointMotor2 motor;
@@ -727,11 +730,36 @@ void testMotors(void){
 	Serial.print("\nStating Test ...");
 	for(int i = 0; i < totalPins; i = i + 2){
 		Serial.printf("\n   Testing Motor: %d Pins: (%d, %d) ", i, pinM[i], pinM[i+1]);
-		motor = JointMotor2(pinM[i], pinM[i+1]);
+		motor = JointMotor2(pinM[i], pinM[i+1],i+1);
 		motor.SendPWM(10);
 		delay(1000);
 		motor.SendPWM(0);
 		delay(1000);
+	}
+	Serial.println("\nFinishing Test ...\n");
+	delay(4000);
+}
+
+void testMotorMoveAngleRead(void){
+	Serial.print("------ MOTOR MOVE ANGLE READ TEST -----\n");
+
+	JointMotor2 motor;
+	int totalPins = NUM_MOTORS*2;
+
+	const int pinM[totalPins] = {JOINT_MOTOR1_FWD, JOINT_MOTOR1_REV, JOINT_MOTOR2_FWD, JOINT_MOTOR2_REV, JOINT_MOTOR3_FWD, JOINT_MOTOR3_REV, JOINT_MOTOR4_FWD, JOINT_MOTOR4_REV, JOINT_MOTOR5_FWD, JOINT_MOTOR5_REV};
+	
+	Serial.print("\nStating Test ...");
+	for(int i = 0; i < totalPins; i = i + 2){
+		Serial.printf("\n   Testing Motor: %d Pins: (%d, %d) ", i, pinM[i], pinM[i+1]);
+		motor = JointMotor2(pinM[i], pinM[i+1],i+1);
+		double angle = motor.getAngleDegrees();
+		Serial.printf("\n     Encoder Initial Read: %.4f", angle);
+		motor.SendPWM(-20);
+		delay(1000);
+		motor.SendPWM(0);
+		delay(1000);
+		angle = motor.getAngleDegrees();
+		Serial.printf("\n     Encoder Final Read: %.4f", angle);
 	}
 	Serial.println("\nFinishing Test ...\n");
 	delay(4000);
