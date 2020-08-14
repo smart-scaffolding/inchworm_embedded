@@ -8,6 +8,10 @@
 class JointMotor2
 {
 private:
+
+	int MAX_RECHABLE_ANGLE;
+	int MIN_RECHABLE_ANGLE;
+
 	uint8_t id;
 
 	uint8_t pwmForward, pwmReverse, pinEnable;
@@ -28,14 +32,18 @@ private:
 	double lastError = 0;
 
 	double lastDebugUpdate = 0;
+	boolean angleErrorFlag = false;
+	int angleErrorCounter = 0;
+	boolean activeJoint; 
 
 public:
 	JointMotor2() {}
 	JointMotor2(int pwmF, int pwmR);
-	JointMotor2(int pinDirectionA1, int pinDirectionB1, int pinPWM1,
+	JointMotor2(boolean activeJointIn, int pinDirectionA1, int pinDirectionB1, int pinPWM1,
 				uint8_t encoderAddress, double kp_a_link_fixed, double ki_a_link_fixed, double kd_a_link_fixed,
 				double kp_d_link_fixed, double ki_d_link_fixed, double kd_d_link_fixed,
-				double ang_offset, bool encoder_clockwise, uint8_t id_input);
+				double ang_offset, bool encoder_clockwise, 
+				int Max_Rechable_Angle, int Min_Rechable_Angle, uint8_t id_input);
 
 	void SendPWM(int speed);
 	void SetTarget(double angle);
@@ -47,7 +55,11 @@ public:
 	void SetKd(float k) { kD = k; }
 	void printPID();
 
+	//**********setters************
+	void JointMotor2::setActiveJoint(boolean s);
+
 	//**********getters************
+	boolean JointMotor2::getActiveJoint();
 	int get_pwmForwardPin();
 	int get_pwmReversePin();
 	int get_pinEnable();

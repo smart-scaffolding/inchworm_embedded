@@ -81,6 +81,7 @@ bool buttonPressed(void);
 void testJointMotor(void);
 void testEncoders(void);
 void testMotors(void);
+void testUnrechableAngles(void);
 
 ////////////////////////////////////////////////////////////////
 // SETUP METHOD
@@ -114,27 +115,27 @@ void setup()
 		/**
 		 * Intialize Joint Motors (PINs, Dynamic PID values, Encoder I2C address, direction, ID)
 		 */
-		if(USE_MOTORS){
-			jointMotor[0] = JointMotor2(JOINT_MOTOR1_FWD, JOINT_MOTOR1_REV, JOINT_MOTOR1_EN, // A-LINK WRIST
-										JOINT_MOTOR1_ADR, 0, 0, 0, 0, 0, 0, 0.0, false, 1);
-			jointMotor[1] = JointMotor2(JOINT_MOTOR2_FWD, JOINT_MOTOR2_REV, JOINT_MOTOR2_EN, // AB-LINK JOINT
-										JOINT_MOTOR2_ADR, 22, .3, 0, 0, 0, 0, 27.81, false, 2);
-			jointMotor[2] = JointMotor2(JOINT_MOTOR3_FWD, JOINT_MOTOR3_REV, JOINT_MOTOR3_EN, // BC-LINK JOINT
-										JOINT_MOTOR3_ADR, 0, 0, 0, 0, 0, 0, 124.38, true, 3);
-			jointMotor[3] = JointMotor2(JOINT_MOTOR4_FWD, JOINT_MOTOR4_REV, JOINT_MOTOR4_EN, // CD-LINK JOINT
-										JOINT_MOTOR4_ADR, 8, .3, 0, 0, 0, 0, 27.8, true, 4);
-			jointMotor[4] = JointMotor2(JOINT_MOTOR5_FWD, JOINT_MOTOR5_REV, JOINT_MOTOR5_EN, // D-LINK WRIST
-										JOINT_MOTOR5_ADR, 0, 0, 0, 0, 0, 0, 0.0, false, 5);
-			// jointMotor[0] = JointMotor2(JOINT_MOTOR1_FWD, JOINT_MOTOR1_REV, JOINT_MOTOR1_EN, // A-LINK WRIST
-			// 							JOINT_MOTOR1_ADR, 0, 0, 0, 0, 0, 0, 0.0, false, 1);
-			// jointMotor[1] = JointMotor2(JOINT_MOTOR2_FWD, JOINT_MOTOR2_REV, JOINT_MOTOR2_EN, // AB-LINK JOINT
-			// 							JOINT_MOTOR2_ADR, 22, .3, 0, 0, 0, 0, 27.81, false, 2);
-			// jointMotor[2] = JointMotor2(JOINT_MOTOR3_FWD, JOINT_MOTOR3_REV, JOINT_MOTOR3_EN, // BC-LINK JOINT
-			// 							JOINT_MOTOR3_ADR, 0, 0, 0, 0, 0, 0, 124.38, true, 3);
-			// jointMotor[3] = JointMotor2(JOINT_MOTOR4_FWD, JOINT_MOTOR4_REV, JOINT_MOTOR4_EN, // CD-LINK JOINT
-			// 							JOINT_MOTOR4_ADR, 0, 0, 0, 0, 0, 0, 27.8, true, 4);
-			// jointMotor[4] = JointMotor2(JOINT_MOTOR5_FWD, JOINT_MOTOR5_REV, JOINT_MOTOR5_EN, // D-LINK WRIST
-			// 							JOINT_MOTOR5_ADR, 0, 0, 0, 0, 0, 0, 0.0, false, 5);
+		if(USE_MOTORS){ // TODO: Reminder that I added the joint active variable and the max and min angle that the physcial robot can reach
+			jointMotor[0] = JointMotor2(true, JOINT_MOTOR1_FWD, JOINT_MOTOR1_REV, JOINT_MOTOR1_EN, // A-LINK WRIST
+										JOINT_MOTOR1_ADR, 0, 0, 0, 0, 0, 0, 0.0, false, 90, -90, 1);
+			jointMotor[1] = JointMotor2(true, JOINT_MOTOR2_FWD, JOINT_MOTOR2_REV, JOINT_MOTOR2_EN, // AB-LINK JOINT
+										JOINT_MOTOR2_ADR, 22, .3, 0, 0, 0, 0, 27.81, false, 90, -90, 2);
+			jointMotor[2] = JointMotor2(true, JOINT_MOTOR3_FWD, JOINT_MOTOR3_REV, JOINT_MOTOR3_EN, // BC-LINK JOINT
+										JOINT_MOTOR3_ADR, 0, 0, 0, 0, 0, 0, 124.38, true, 90, -90, 3);
+			jointMotor[3] = JointMotor2(true, JOINT_MOTOR4_FWD, JOINT_MOTOR4_REV, JOINT_MOTOR4_EN, // CD-LINK JOINT
+										JOINT_MOTOR4_ADR, 8, .3, 0, 0, 0, 0, 27.8, true, 90, -90, 4);
+			jointMotor[4] = JointMotor2(true, JOINT_MOTOR5_FWD, JOINT_MOTOR5_REV, JOINT_MOTOR5_EN, // D-LINK WRIST
+										JOINT_MOTOR5_ADR, 0, 0, 0, 0, 0, 0, 0.0, false, 90, -90, 5);
+			// jointMotor[0] = JointMotor2(true, JOINT_MOTOR1_FWD, JOINT_MOTOR1_REV, JOINT_MOTOR1_EN, // A-LINK WRIST
+			// 							JOINT_MOTOR1_ADR, 0, 0, 0, 0, 0, 0, 0.0, false, 90, -90, 1);
+			// jointMotor[1] = JointMotor2(true, JOINT_MOTOR2_FWD, JOINT_MOTOR2_REV, JOINT_MOTOR2_EN, // AB-LINK JOINT
+			// 							JOINT_MOTOR2_ADR, 22, .3, 0, 0, 0, 0, 27.81, false, 90, -90, 2);
+			// jointMotor[2] = JointMotor2(true, JOINT_MOTOR3_FWD, JOINT_MOTOR3_REV, JOINT_MOTOR3_EN, // BC-LINK JOINT
+			// 							JOINT_MOTOR3_ADR, 0, 0, 0, 0, 0, 0, 124.38, true, 90, -90, 3);
+			// jointMotor[3] = JointMotor2(true, JOINT_MOTOR4_FWD, JOINT_MOTOR4_REV, JOINT_MOTOR4_EN, // CD-LINK JOINT
+			// 							JOINT_MOTOR4_ADR, 0, 0, 0, 0, 0, 0, 27.8, true, 90, -90, 4);
+			// jointMotor[4] = JointMotor2(true, JOINT_MOTOR5_FWD, JOINT_MOTOR5_REV, JOINT_MOTOR5_EN, // D-LINK WRIST
+			// 							JOINT_MOTOR5_ADR, 0, 0, 0, 0, 0, 0, 0.0, false, 90, -90, 5);
 
 			jointMotor[0].SetTarget(0.0);
 			jointMotor[1].SetTarget(27.81);
@@ -180,6 +181,8 @@ void loop()
 		testEncoders();
 	}else if(testState == TEST_MOTORS){
 		testMotors();
+	}else if(testState == TEST_UNRECHABLE_ANGLES){
+		testUnrechableAngles();
 	}else if(testState == ROBOT_TUNNING){
 		RunPidTuningDebug();
 	}else if(testState == ROBOT_NORMAL){
@@ -722,7 +725,7 @@ void testEncoders(void){
 }
 
 void testMotors(void){
-		Serial.print("------ MOTOR TEST -----\n");
+	Serial.print("------ MOTOR TEST -----\n");
 	Serial.print("  The following pins are set for each motor (forward, reverse): \n");
 
 	JointMotor2 motor;
@@ -733,7 +736,7 @@ void testMotors(void){
 		Serial.printf("  (%d, %d) | ", pinM[i], pinM[i+1]);
 	} 
 	
-	Serial.print("\nStating Test ...");
+	Serial.print("\nStarting Test ...");
 	for(int i = 0; i < totalPins; i = i + 2){
 		Serial.printf("\n   Testing Motor: %d Pins: (%d, %d) ", i, pinM[i], pinM[i+1]);
 		motor = JointMotor2(pinM[i], pinM[i+1]);
@@ -744,4 +747,34 @@ void testMotors(void){
 	}
 	Serial.println("\nFinishing Test ...\n");
 	delay(4000);
+}
+
+void testUnrechableAngles(void){
+	Serial.print("------ UNRECHABLE ANGLES TEST -----\n");
+
+	jointMotor[0] = JointMotor2(false, JOINT_MOTOR1_FWD, JOINT_MOTOR1_REV, JOINT_MOTOR1_EN, // A-LINK WRIST
+										JOINT_MOTOR1_ADR, 0, 0, 0, 0, 0, 0, 0.0, false, 90, -90, 1);
+	jointMotor[1] = JointMotor2(false, JOINT_MOTOR2_FWD, JOINT_MOTOR2_REV, JOINT_MOTOR2_EN, // AB-LINK JOINT
+										JOINT_MOTOR2_ADR, 0, 0, 0, 0, 0, 0, 0, false, 90, -90, 2);
+	jointMotor[2] = JointMotor2(false, JOINT_MOTOR3_FWD, JOINT_MOTOR3_REV, JOINT_MOTOR3_EN, // BC-LINK JOINT
+										JOINT_MOTOR3_ADR, 0, 0, 0, 0, 0, 0, 0, true, 90, -90, 3);
+	jointMotor[3] = JointMotor2(false, JOINT_MOTOR4_FWD, JOINT_MOTOR4_REV, JOINT_MOTOR4_EN, // CD-LINK JOINT
+										JOINT_MOTOR4_ADR, 0, 0, 0, 0, 0, 0, 0, true, 90, -90, 4);
+	jointMotor[4] = JointMotor2(false, JOINT_MOTOR5_FWD, JOINT_MOTOR5_REV, JOINT_MOTOR5_EN, // D-LINK WRIST
+										JOINT_MOTOR5_ADR, 0, 0, 0, 0, 0, 0, 0, false, 90, -90, 5);
+
+	// TODO: add to test moves 45 degrees on every angle angle and then tries to move to 100
+	for(int i = 0; i < NUM_MOTORS; i++){
+		jointMotor[i].setActiveJoint(true);
+		jointMotor[i].SetTarget(100);
+		int effort = jointMotor[i].CalcEffort();
+		jointMotor[i].SendPWM(effort);
+		delay(3000);
+		if(!jointMotor[i].getActiveJoint()){
+			Serial.printf("PASSED: Joint %d\n", i+1);
+		}else{
+			Serial.printf("FAILED: Joint %d\n", i+1);
+		}
+	}
+	Serial.println("\nFinishing Test ...\n");
 }

@@ -11,10 +11,11 @@ JointMotor2::JointMotor2(int pwmF, int pwmR)
 	pinMode(pwmReverse, OUTPUT);
 }
 
-JointMotor2::JointMotor2(int pwmF, int pwmR, int pinE,
-						 uint8_t encoderAddress, double kp_a_link_fixed, double ki_a_link_fixed, double kd_a_link_fixed,
+JointMotor2::JointMotor2(boolean activeJointIn, int pwmF, int pwmR, int pinE, uint8_t encoderAddress, 
+						double kp_a_link_fixed, double ki_a_link_fixed, double kd_a_link_fixed,
 						 double kp_d_link_fixed, double ki_d_link_fixed, double kd_d_link_fixed,
-						 double ang_offset, bool encoder_clockwise, uint8_t id_input)
+						 double ang_offset, bool encoder_clockwise, 
+						 int Max_Rechable_Angle, int Min_Rechable_Angle, uint8_t id_input)
 {
 	//Pin Configuration
 	pwmForward = pwmF;
@@ -42,29 +43,37 @@ JointMotor2::JointMotor2(int pwmF, int pwmR, int pinE,
 	enc_clockwise = encoder_clockwise;
 	encoder.setClockWise(enc_clockwise);
 
+	MAX_RECHABLE_ANGLE = Max_Rechable_Angle;
+	MIN_RECHABLE_ANGLE =  Min_Rechable_Angle,
+
 	id = id_input;
+	activeJoint = activeJointIn;
 }
 
 const int maxDutyCycle = 230;
 void JointMotor2::SendPWM(int speed)
 {
-	if (speed < 0)
-	{
-		if (speed < -maxDutyCycle)
+	if(activeJoint){
+		if (speed < 0)
 		{
-			speed = -maxDutyCycle;
+			if (speed < -maxDutyCycle)
+			{
+				speed = -maxDutyCycle;
+			}
+			analogWrite(pwmReverse, 0);
+			analogWrite(pwmForward, -speed);
 		}
-		analogWrite(pwmReverse, 0);
-		analogWrite(pwmForward, -speed);
-	}
-	else
-	{
-		if (speed > maxDutyCycle)
+		else
 		{
-			speed = maxDutyCycle;
+			if (speed > maxDutyCycle)
+			{
+				speed = maxDutyCycle;
+			}
+			analogWrite(pwmForward, 0);
+			analogWrite(pwmReverse, speed);
 		}
-		analogWrite(pwmForward, 0);
-		analogWrite(pwmReverse, speed);
+	}else{
+		Serial.printf("3. ERROR Joint %d deactivated. See previous errors.", id);
 	}
 
 	return;
@@ -104,9 +113,19 @@ double JointMotor2::getAngleDegrees()
 	if (delta < -180)
 		delta += 360;
 
+	// TODO: angle errror dealt with
+	angleErrorFlag = false;
 	if (fabs(delta) > ANGLE_ERROR_THRESHOLD)
-	{
-		Serial.println("Angle error!");
+	{	boolean flagPrint = true;
+		if(angleErrorCounter > 5){
+			flagPrint = false;
+			Serial.printf("1. CHECK Joint %d incorrect encoder angles.\n", id);
+		}
+		if(flagPrint){
+			Serial.printf("1. ANGLE ERROR Joint %d because of delta %f\n", id, fabs(delta));
+		}
+		angleErrorFlag = true;
+		angleErrorCounter++;
 	}
 
 	last_calibrated_angle = calibrated_angle;
@@ -153,6 +172,14 @@ int JointMotor2::CalcEffort(void)
 {
 	double currentAngle = getAngleDegrees();
 
+	// TODO: If angle error flag is set, effort should be zero
+	if(angleErrorFlag){ return 0; }
+	// TODO: Check if angle is greater than rechable by robot
+	// if(targetAngle > MIN_RECHABLE_ANGLE || targetAngle < MAX_RECHABLE_ANGLE){ 
+	// 	Serial.printf("UNRECHABLE ANGLE Joint %d\n",id);
+	// 	return 0;	
+	// }
+
 	double error = targetAngle - currentAngle;
 
 	if (error > 180)
@@ -174,11 +201,17 @@ int JointMotor2::CalcEffort(void)
 
 	double deltaError = error - lastError;
 
+	// TODO: Check this after others (discuss with NEEL logic)
+	// int deltaThreshold = 2;
+	// if(fabs(deltaError) < deltaThreshold && fabs(sumError) == SUM_THRESHOLD){
+	// 	Serial.printf("2. ERROR LARGE EFFORT Shutting down Joint %d. Reset Teensy.", id);
+	// 	activeJoint = false;
+	// }
+
 	double effort = (kP * error) + (kI * sumError) + (kD * deltaError);
 
 	lastError = error;
 
-	// //TODO:
 	double currentTime = millis();
 	if (currentTime - lastDebugUpdate >= 1000)
 	{
@@ -245,6 +278,15 @@ void JointMotor2::printPID()
 }
 
 ////**********************GETTTERS**************************////
+void JointMotor2::setActiveJoint(boolean s){
+	activeJoint = s;
+}
+
+////**********************GETTTERS**************************////
+
+boolean JointMotor2::getActiveJoint(){
+	return activeJoint;
+}
 
 //Pin Configuration
 int JointMotor2::get_pwmForwardPin() {
